@@ -1,7 +1,3 @@
-timestamps {
-  def timestamp = new Date().format("yyyyMMddHHmmss")
-  env.BUILD_TIMESTAMP = timestamp
-}
 pipeline {
   agent any
   environment {
