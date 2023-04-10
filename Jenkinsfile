@@ -8,17 +8,16 @@ pipeline {
     stage("Building the Student Survey Image") {
       steps {
         script {
-          def BUILD_TIMESTAMP = sh(returnStdout: true, script: 'date +%s').trim()
-          checkout scm
-          sh 'rm -rf *.war'
-          sh 'jar -cvf Survey.war -C Webcontent/ .'
-          sh 'echo $(BUILD_TIMESTAMP)'
-          withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'DOCKERHUB_USER')]) {
+          def buildTimestamp = sh(returnStdout: true, script: 'date +%s').trim()
+        sh 'rm -rf *.war'
+        sh 'jar -cvf Survey.war -C Webcontent/ .'
+        sh "echo ${buildTimestamp}"
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'DOCKERHUB_USER')]) {
           sh """
-          docker login -u ${ramiyappan} -p '${DOCKERHUB_PASS}'
+          docker login -u ${DOCKERHUB_USER} -p '${DOCKERHUB_PASS}'
           """
-}
-          def customImage = docker.build("ramiyappan/studentsurvey:${BUILD_TIMESTAMP}")
+        }
+        def customImage = docker.build("ramiyappan/studentsurvey:${buildTimestamp}")
         }
       }
     }
