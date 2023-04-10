@@ -11,7 +11,9 @@ pipeline {
           sh 'rm -rf *.war'
           sh 'jar -cvf Survey.war -C Webcontent/ .'
           sh 'echo $(BUILD_TIMESTAMP)'
-          sh "docker login -u ramiyappan --password-stdin ${DOCKERHUB_PASS}"
+          withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'ramiyappan')]) {
+  sh "echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin"
+}
           def customImage = docker.build("ramiyappan/studentsurvey:${BUILD_TIMESTAMP}")
         }
       }
