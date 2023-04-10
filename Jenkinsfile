@@ -8,7 +8,7 @@ pipeline {
     stage("Building the Student Survey Image") {
       steps {
         script {
-          def buildTimestamp = sh(returnStdout: true, script: 'date +%s').trim()
+          def BUILD_TIMESTAMP = sh(returnStdout: true, script: 'date +%s').trim()
           checkout scm
           sh 'rm -rf *.war'
           sh 'jar -cvf Survey.war -C Webcontent/ .'
