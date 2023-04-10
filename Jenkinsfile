@@ -1,12 +1,13 @@
+timestamps {
+  def timestamp = new Date().format("yyyyMMddHHmmss")
+  env.BUILD_TIMESTAMP = timestamp
+}
 pipeline {
   agent any
   environment {
     DOCKERHUB_PASS = credentials('dockid')
   }
-  timestamps {
-  def timestamp = new Date().format("yyyyMMddHHmmss")
-  env.BUILD_TIMESTAMP = timestamp
-}
+  
   stages {
     stage("Building the Student Survey Image") {
       steps {
