@@ -23,7 +23,7 @@ pipeline {
         }
       }
     }
-    stage("Deploying to Rancher as with load balancer") {
+    stage("Deploying to Rancher as single pod") {
       steps {
         sh 'kubectl set image deployment/stusurvey-pipeline stusurvey-lb-ramiyappan/studentsurvey:${BUILD_TIMESTAMP)-n jenkins-pipeline'
       }
