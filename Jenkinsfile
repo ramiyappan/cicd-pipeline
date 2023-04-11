@@ -18,8 +18,8 @@ pipeline {
                     checkout scm
                     sh 'pwd'
                     sh 'ls'
-                    sh 'rm -rf *.war'
-                    sh 'cd Webcontent && jar -cvf Survey.war *.'
+                    //sh 'rm -rf *.war'
+                    sh 'jar -cvf Survey.war * .'
                     // sh 'echo ${BUILD TIMESTAMP}'
                     tag = generateTag()
                     docker.withRegistry('',registryCredential){
