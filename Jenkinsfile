@@ -15,9 +15,9 @@ pipeline {
                     sh 'rm -rf *.war'
                     sh 'jar -cvf NewSurvey.war -C src/main/webapp/ .'
                     // sh 'echo ${BUILD TIMESTAMP}'
-                    sh 'pwd'
+                    // sh 'pwd'
                     sh 'sudo docker build -t ramiyappan/studentsurvey:latest .'
-                    sh 'pwd'
+                    // sh 'pwd'
                     // sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                }
             }
@@ -27,12 +27,7 @@ pipeline {
             steps {
                 script {
                     // sh 'echo ${BUILD_TIMESTAMP}'
-                    docker.withRegistry('',registryCredential) {
-                        def image = docker.build('ramiyappan/studentsurvey:'+tag, '.')
-                        docker.withRegistry('',registryCredential) {
-                            image.push()
-                        }
-                    }
+                    sh 'docker push ramiyappan/studentsurvey:latest'
                 }
             }
         }
