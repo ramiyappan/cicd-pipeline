@@ -13,8 +13,8 @@ pipeline {
                     sh 'pwd'
                     sh 'ls'
                     sh 'rm -rf *.war'
-                    // sh 'cd ~/usr/local/src/'
-                    sh 'jar -cvf NewSurvey.war - C ~/usr/local/src/ .'
+                    sh 'cd ../../..'
+                    sh 'jar -cvf NewSurvey.war - C usr/local/src/ .'
                     // sh 'echo ${BUILD TIMESTAMP}'
                     tag = generateTag()
                     docker.withRegistry('',registryCredential){
