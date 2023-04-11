@@ -11,9 +11,9 @@ pipeline {
 		    		checkout scm
 		    		sh 'ls'
 		    		sh 'cd Webcontent/ && jar -cvf Survey.war *'
-		    		sh("sudo -S docker build --tag ramiyappan/studentsurvey:${BUILD_TIMESTAMP} .")
+		    		sh("docker build --tag ramiyappan/studentsurvey:${BUILD_TIMESTAMP} .")
 		    		sh("echo ${BUILD_TIMESTAMP}")
-		    		sh('sudo docker login -u ramiyappan -p $DOCKERHUB_PASS')
+				sh("docker login -u ramiyappan -p ${DOCKERHUB_PASS}")
 		    	}
     		}
     	
