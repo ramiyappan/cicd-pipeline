@@ -1,84 +1,37 @@
 pipeline {
-    environment {
-        registry = "ramiyappan/studentsurvey"
-        registryCredential = 'dockid'
-        dockerImage = ''
+  agent any
+  environment {
+    DOCKERHUB_PASS = credentials('dockid')
+  }
+  
+  stages {
+    stage("Building the Student Survey Image") {
+      steps {
+        script {
+          checkout scm
+          sh 'rm -rf *.war'
+          sh 'jar -cvf Survey.war -C Webcontent/ .'
+          sh "docker login -u ramiyappan -password ${DOCKERHUB_PASS}"
+          def customImage = docker.build("ramiyappan/studentsurvey")
+        }
+      }
     }
-    agent any
-    
-    stages {
-        stage('Cloning Git') {
-            steps{
-                git 'https://github.com/ramiyappan/cicd-pipeline.git'
-                withAnt(installation: 'Ant1.10.7') {
-                        sh'''
-                        #!/bin/bash
-                        cd ~/workspace/swe645-group-project/swe645-group
-                        ls
-                        ant war
-                        '''
-                }
-            }
+    stage("Pushing Image to DockerHub") {
+      steps {
+        script {
+          sh 'docker push ramiyappan/studentsurvey'
         }
-
-        stage('Build') {
-            steps {
-                echo 'Building..'
-                script {
-
-                  dockerImage = docker.build registry + ":$BUILD_NUMBER"
-                }
-
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing..'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
-            }
-        }
-
-        stage('Deploy Image') {
-            steps{
-                script{
-                    docker.withRegistry('',registryCredential){
-                        dockerImage.push()
-                    }
-                }
-            }
-        }
-
-        stage('Remove Unused docker image') {
-          steps{
-            sh "docker rmi $registry:$BUILD_NUMBER"
-          }
-        }
-		
-		stage('redeploy') {
-            steps{
-               
-               sh'''
-               #!/bin/bash
-                docker login
-                docker pull ramiyappan/studentsurvey:$BUILD_NUMBER
-                sudo -s source /etc/environment
-                kubectl --kubeconfig /home/ubuntu/.kube/config set image deployment finalcluster swe645-group=docker.io/swe645docker/swe645-group-project:$BUILD_NUMBER
-            '''
-            }
-        }
-
-        stage('Remove Unused docker image') {
-          steps{
-            sh "docker rmi $registryRestful:$BUILD_NUMBER"
-            sh "docker rmi $registryApp:$BUILD_NUMBER"
-          }
-        }
-		
+      }
     }
-
-     
+    stage("Deploying to Rancher as single pod") {
+      steps {
+        sh 'kubectl set image deployment/finaldeploy container-0=ramiyappan/studentsurvey -n jenkins-pipeline'
+      }
+    }
+    stage("Deploying to Rancher as with load balancer") {
+      steps {
+        sh 'kubectl set image deployment/loadbal container-0=ramiyappan/studentsurvey -n jenkins-pipeline'
+      }
+    }
+  }
 }
