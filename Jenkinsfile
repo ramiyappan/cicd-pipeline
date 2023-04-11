@@ -20,7 +20,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    sh 'echo ${BUILD_TIMESTAMP}'
+                    // sh 'echo ${BUILD_TIMESTAMP}'
                     tag = generateTag()
                     docker.withRegistry('',registryCredential){
                       def customImage = docker.build("ramiyappan/studentsurvey:"+tag)
