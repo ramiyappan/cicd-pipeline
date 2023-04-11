@@ -1,38 +1,63 @@
-pipeline{
-    agent any
+@NonCPS
+def generateTag() {
+    return "build-" + new Date().format("yyyyMMdd-HHmmss")  
+}
+
+pipeline {
     environment {
-		DOCKERHUB_CREDENTIALS=credentials('dockid')
-	}
-  stages{
-    stage('Build') {
-      steps {
-	sh 'rm -rf *.var'
-        sh 'jar -cvf studentsurvey.war -C Webcontent/ .'      
-        sh 'docker build -t ramiyappan/studentsurvey .'
+        registry = "ramiyappan/studentsurvey"
+        // registryCredential = 'dockercred'
+    }
+    agent any
+
+    stages{
+        stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/ramiyappan/cicd-pipeline.git']]])
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    sh 'echo ${BUILD_TIMESTAMP}'
+                    tag = generateTag()
+                    docker.withRegistry('',registryCredential){
+                      def customImage = docker.build("ramiyappan/studentsurvey:"+tag)
+                   }
+               }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    sh 'echo ${BUILD_TIMESTAMP}'
+                    docker.withRegistry('',registryCredential) {
+                        def image = docker.build('ramiyappan/studentsurvey:'+tag, '.')
+                        docker.withRegistry('',registryCredential) {
+                            image.push()
+                        }
+                    }
+                }
+            }
+        }
+
+      stage('Deploying Rancher to single node') {
+         steps {
+            script{
+               sh 'kubectl set image deployment/finalcluster container-0=ramiyappan/studentsurvey:'+tag
+            }
+         }
       }
+
+    // stage('Deploying Rancher to Load Balancer') {
+    //    steps {
+    //       script{
+    //          sh 'kubectl set image deployment/surveyformlb container-0=srivallivajha/survey645:'+tag
+    //       }
+    //    }
+    // }
+
     }
-    stage('Login') {
-      steps {
-        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-       }
-    }
-    stage("Push image to docker hub"){
-      steps {
-        sh 'docker push ramiyappan/studentsurvey:latest'
-      }
-    }
-        stage("deploying on k8")
-	{
-		steps{
-			sh 'kubectl set image deployment/studentpage container-0=ramiyappan/studentsurvey:latest -n default'
-			sh 'kubectl rollout restart deploy studentpage -n default'
-		}
-	} 
-  }
- 
-  post {
-	  always {
-			sh 'docker logout'
-		}
-	}    
 }
