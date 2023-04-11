@@ -1,37 +1,38 @@
-pipeline {
-  agent any
-  environment {
-    DOCKERHUB_PASS = credentials('dockid')
+pipeline{
+    agent any
+    environment {
+		DOCKERHUB_CREDENTIALS=credentials('dockid')
+	}
+  stages{
+    stage('Build') {
+      steps {
+	sh 'rm -rf *.var'
+        sh 'jar -cvf studentsurvey.war -C src/main/webapp .'      
+        sh 'docker build -t ramiyappan/studentsurvey:latest .'
+      }
+    }
+    stage('Login') {
+      steps {
+        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+       }
+    }
+    stage("Push image to docker hub"){
+      steps {
+        sh 'docker push ramiyappan/studentsurvey:latest'
+      }
+    }
+        stage("deploying on k8")
+	{
+		steps{
+			sh 'kubectl set image deployment/studentpage container-0=ramiyappan/studentsurvey:latest -n default'
+			sh 'kubectl rollout restart deploy studentpage -n default'
+		}
+	} 
   }
-  
-  stages {
-    stage("Building the Student Survey Image") {
-      steps {
-        script {
-          checkout scm
-          sh 'rm -rf *.war'
-          sh 'jar -cvf Survey.war -C Webcontent/ .'
-          sh 'docker login -u ramiyappan --password-stdin $DOCKERHUB_PASS'
-          def customImage = docker.build("ramiyappan/studentsurvey")
-        }
-      }
-    }
-    stage("Pushing Image to DockerHub") {
-      steps {
-        script {
-          sh 'docker push ramiyappan/studentsurvey'
-        }
-      }
-    }
-    stage("Deploying to Rancher as single pod") {
-      steps {
-        sh 'kubectl set image deployment/finaldeploy container-0=ramiyappan/studentsurvey -n jenkins-pipeline'
-      }
-    }
-    stage("Deploying to Rancher as with load balancer") {
-      steps {
-        sh 'kubectl set image deployment/loadbal container-0=ramiyappan/studentsurvey -n jenkins-pipeline'
-      }
-    }
-  }
+ 
+  post {
+	  always {
+			sh 'docker logout'
+		}
+	}    
 }
