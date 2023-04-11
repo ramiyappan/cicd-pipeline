@@ -1,16 +1,16 @@
-@NonCPS
-def generateTag() {
-    return "build-" + new Date().format("yyyyMMdd-HHmmss")
-}
-
 pipeline {
-    environment {
-        registry = "ramiyappan/studentsurvey"
-        registryCredential = 'dockid'
-    }
     agent any
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockid')
+    }
 
     stages{
+        
+        stage('SCM Checkout') {
+            steps{
+                git 'https://github.com/ramiyappan/cicd-pipeline.git'
+            }
+        }
         
         stage('Build') {
             steps {
