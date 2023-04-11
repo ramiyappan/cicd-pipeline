@@ -6,12 +6,6 @@ pipeline {
 
     stages{
         
-        stage('SCM Checkout') {
-            steps{
-                git 'https://github.com/ramiyappan/cicd-pipeline.git'
-            }
-        }
-        
         stage('Build') {
             steps {
                 script {
