@@ -7,7 +7,7 @@ pipeline{
     stage('Build') {
       steps {
 	sh 'rm -rf *.var'
-        sh 'jar -cvf studentsurvey.war -C src/main/webapp .'      
+        sh 'jar -cvf studentsurvey.war -C Webcontent/ .'      
         sh 'docker build -t ramiyappan/studentsurvey:latest .'
       }
     }
