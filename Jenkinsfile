@@ -10,7 +10,7 @@ pipeline {
         script {
           checkout scm
           sh 'rm -rf *.war'
-          sh 'jar -cvf Survey.war -C src/main/webapp .'
+          sh 'jar -cvf Survey.war -C /usr/local/tomcat/webapps/ .'
           withCredentials([usernamePassword(credentialsId: 'dockid', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'ramiyappan')]) {
           sh """
           docker login -u ${DOCKERHUB_USER} -p '${DOCKERHUB_PASS}'
