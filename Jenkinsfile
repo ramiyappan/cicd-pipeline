@@ -1,15 +1,8 @@
-@NonCPS
-def generateTag() {
-  return "build-" + new Date().format("yyyyMMdd-HHmmss")
-}
-
 pipeline {
-  environment {
-    registry = "ramiyappan/studentsurvey"
-    registryCredential = 'dockid'
-  }
   agent any
-  
+  environment {
+    DOCKERHUB_PASS = credentials('dockid')
+  }
   stages {
     stage("Building the Student Survey Image") {
       steps {
@@ -17,35 +10,30 @@ pipeline {
           checkout scm
           sh 'rm -rf *.war'
           sh 'jar -cvf Survey.war -C Webcontent/ .'
-          tag = generateTag()
-          docker.withRegistry('',registryCredential){
-          def customImage = docker.build("ramiyappan/studentsurvey:"+tag)
+          withCredentials([usernamePassword(credentialsId: 'dockid', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'ramiyappan')]) {
+          sh """
+          docker login -u ${DOCKERHUB_USER} -p '${DOCKERHUB_PASS}'
+          """
           }
+          def customImage = docker.build("ramiyappan/studentsurvey:${BUILD_TIMESTAMP}")
         }
       }
     }
     stage("Pushing Image to DockerHub") {
       steps {
         script {
-           docker.withRegistry('',registryCredential) {
-             def image = docker.build('ramiyappan/studentsurvey:'+tag, '.')
-             docker.withRegistry('',registryCredential) {
-               image.push()
-             }
-           }
+          sh 'docker push ramiyappan/studentsurvey:${BUILD_TIMESTAMP}'
         }
       }
     }
     stage("Deploying to Rancher as single pod") {
       steps {
-        script {
-          sh 'kubectl set image deployment/finaldeploy container-0=ramiyappan/studentsurvey:'+tag
+        sh 'kubectl set image deployment/stusurvey-pipeline stusurvey-lb-ramiyappan/studentsurvey:${BUILD_TIMESTAMP)-n jenkins-pipeline'
       }
     }
     stage("Deploying to Rancher as with load balancer") {
       steps {
-        sh 'kubectl set image deployment/loadbal container-0=ramiyappan/studentsurvey:'+tag'
+        sh 'kubectl set image deployment/studentsurvey-lb studentsurvey-lb-ramiyappan/studentsurvey:${BUILD_TIMESTAMP)-n jenkins-pipeline'
       }
     }
   }
-}
