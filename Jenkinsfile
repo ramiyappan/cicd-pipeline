@@ -6,7 +6,7 @@ def generateTag() {
 pipeline {
     environment {
         registry = "ramiyappan/studentsurvey"
-        // registryCredential = 'dockercred'
+         registryCredential = 'dockid'
     }
     agent any
 
@@ -21,9 +21,9 @@ pipeline {
             steps {
                 script {
                     // sh 'echo ${BUILD_TIMESTAMP}'
-                    tag = generateTag()
+                    //tag = generateTag()
                     docker.withRegistry('',registryCredential){
-                      def customImage = docker.build("ramiyappan/studentsurvey:"+tag)
+                      def customImage = docker.build("ramiyappan/studentsurvey:")
                    }
                }
             }
@@ -34,7 +34,7 @@ pipeline {
                 script {
                     sh 'echo ${BUILD_TIMESTAMP}'
                     docker.withRegistry('',registryCredential) {
-                        def image = docker.build('ramiyappan/studentsurvey:'+tag, '.')
+                        def image = docker.build('ramiyappan/studentsurvey:', '.')
                         docker.withRegistry('',registryCredential) {
                             image.push()
                         }
@@ -46,7 +46,7 @@ pipeline {
       stage('Deploying Rancher to single node') {
          steps {
             script{
-               sh 'kubectl set image deployment/finalcluster container-0=ramiyappan/studentsurvey:'+tag
+               sh 'kubectl set image deployment/finalcluster container-0=ramiyappan/studentsurvey:'
             }
          }
       }
