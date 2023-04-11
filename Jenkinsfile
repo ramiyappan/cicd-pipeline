@@ -10,7 +10,7 @@ pipeline {
         script {
           checkout scm
           sh 'rm -rf *.war'
-          sh 'jar -cvf Survey.war -C Webcontent/ .'
+          sh 'jar -cvf Survey.war -C .'
           withCredentials([usernamePassword(credentialsId: 'dockid', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'ramiyappan')]) {
           sh """
           docker login -u ${DOCKERHUB_USER} -p '${DOCKERHUB_PASS}'
