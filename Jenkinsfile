@@ -1,63 +1,39 @@
-@NonCPS
-def generateTag() {
-    return "build-" + new Date().format("yyyyMMdd-HHmmss")  
-}
-
 pipeline {
-    environment {
-        registry = "ramiyappan/studentsurvey"
-         registryCredential = 'dockid'
-    }
     agent any
-
+ 
+	environment { 
+        DOCKERHUB_PASS = credentials('dockid')
+    }
     stages{
-        stage('Checkout') {
+    	stage("Building the student survey image"){
+    		steps{
+    			script{
+		    		checkout scm
+		    		sh 'ls'
+		    		sh 'cd Webcontent && jar -cvf Survey.war *'
+		    		sh("sudo -S docker build --tag hshen2/studentsurvey645:${BUILD_TIMESTAMP} .")
+		    		sh("echo ${BUILD_TIMESTAMP}")
+		    		sh('sudo docker login -u hshen2 -p \"${DOCKERHUB_PASS}\"')
+		    	}
+    		}
+    	
+    	
+    	}
+    
+        stage ("pushing image to dockerhub") {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/ramiyappan/cicd-pipeline.git']]])
-            }
-        }
-
-        stage('Build') {
-            steps {
-                script {
-                    // sh 'echo ${BUILD_TIMESTAMP}'
-                    //tag = generateTag()
-                    docker.withRegistry('',registryCredential){
-                      def customImage = docker.build("ramiyappan/studentsurvey:")
-                   }
-               }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    sh 'echo ${BUILD_TIMESTAMP}'
-                    docker.withRegistry('',registryCredential) {
-                        def image = docker.build('ramiyappan/studentsurvey:', '.')
-                        docker.withRegistry('',registryCredential) {
-                            image.push()
-                        }
-                    }
+            	script{
+                	sh("sudo docker push hshen2/studentsurvey645:${BUILD_TIMESTAMP}")
                 }
             }
         }
 
-      stage('Deploying Rancher to single node') {
-         steps {
-            script{
-               sh 'kubectl set image deployment/finalcluster container-0=ramiyappan/studentsurvey:'
+		stage("Deploy docker image to the kube cluster"){
+            steps{
+                sh("kubectl set image deployment/assignment2 container-0=hshen2/studentsurvey645:${BUILD_TIMESTAMP} -n default")
             }
-         }
-      }
-
-    // stage('Deploying Rancher to Load Balancer') {
-    //    steps {
-    //       script{
-    //          sh 'kubectl set image deployment/surveyformlb container-0=srivallivajha/survey645:'+tag
-    //       }
-    //    }
-    // }
+        }
+        
 
     }
 }
