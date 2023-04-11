@@ -16,6 +16,8 @@ pipeline {
             steps {
                 script {
                     checkout scm
+                    sh 'pwd'
+                    sh 'ls'
                     sh 'rm -rf *.war'
                     sh 'cd Webcontent && jar -cvf Survey.war *.'
                     // sh 'echo ${BUILD TIMESTAMP}'
