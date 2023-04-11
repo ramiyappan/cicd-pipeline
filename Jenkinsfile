@@ -10,7 +10,7 @@ pipeline {
           checkout scm
           sh 'rm -rf *.war'
           sh 'jar -cvf Survey.war -C src/main/webapp .'
-          sh 'echo $(BUILD_TIMESTAMP)'
+          sh 'echo ${BUILD_TIMESTAMP}'
           sh "docker login -u ramiyappan -p ${DOCKERHUB_PASS}"
           def customImage = docker.build("ramiyappan/studentsurvey:${BUILD_TIMESTAMP}")
         }
