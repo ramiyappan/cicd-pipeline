@@ -11,11 +11,7 @@ pipeline {
           checkout scm
           sh 'rm -rf *.war'
           sh 'jar -cvf Survey.war -C Webcontent/ .'
-          withCredentials([usernamePassword(credentialsId: 'dockid', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'ramiyappan')]) {
-          sh """
-          docker login -u ${DOCKERHUB_USER} -p '${DOCKERHUB_PASS}'
-          """
-          }
+          sh "docker login -u ramiyappan -p ${DOCKERHUB_PASS}"
           def customImage = docker.build("ramiyappan/studentsurvey")
         }
       }
