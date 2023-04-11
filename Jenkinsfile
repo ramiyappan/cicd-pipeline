@@ -12,9 +12,8 @@ pipeline {
                     checkout scm
                     sh 'pwd'
                     sh 'ls'
-                    sh 'rm -rf *.war'
-                    sh 'cd ../../..'
-                    sh 'jar -cvf NewSurvey.war - C usr/local/src/ .'
+                    // sh 'rm -rf *.war'
+                    sh 'jar -cvf NewSurvey.war - C webapp/ .'
                     // sh 'echo ${BUILD TIMESTAMP}'
                     tag = generateTag()
                     docker.withRegistry('',registryCredential){
