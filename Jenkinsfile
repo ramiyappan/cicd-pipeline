@@ -16,7 +16,7 @@ pipeline {
                     sh 'jar -cvf NewSurvey.war -C src/main/webapp/ .'
                     // sh 'echo ${BUILD TIMESTAMP}'
                     sh 'pwd'
-                    docker.build("ramiyappan/studentsurvey")
+                    sh 'docker build -t ramiyappan/studentsurvey:latest .'
                     sh 'pwd'
                     // sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                }
