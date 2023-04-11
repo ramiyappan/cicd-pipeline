@@ -8,7 +8,7 @@ pipeline{
       steps {
 	sh 'rm -rf *.var'
         sh 'jar -cvf studentsurvey.war -C Webcontent/ .'      
-        sh 'docker build -t ramiyappan/studentsurvey:latest .'
+        sh 'docker build -t ramiyappan/studentsurvey .'
       }
     }
     stage('Login') {
