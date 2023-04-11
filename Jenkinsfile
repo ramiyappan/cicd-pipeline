@@ -1,8 +1,15 @@
+@NonCPS
+def generateTag() {
+  return "build-" + new Date().format("yyyyMMdd-HHmss")
+}
+
 pipeline {
-  agent any
   environment {
-    DOCKERHUB_PASS = credentials('dockid')
+    registry = "ramiyappan/studentsurvey"
+    registryCredential = 'dockid'
   }
+  agent any
+  
   stages {
     stage("Building the Student Survey Image") {
       steps {
@@ -10,31 +17,34 @@ pipeline {
           checkout scm
           sh 'rm -rf *.war'
           sh 'jar -cvf Survey.war -C Webcontent/ .'
-          withCredentials([usernamePassword(credentialsId: 'dockid', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'ramiyappan')]) {
-          sh """
-          docker login -u ${DOCKERHUB_USER} -p '${DOCKERHUB_PASS}'
-          """
-        }
-          sh "docker login -u ramiyappan --password-stdin ${DOCKERHUB_PASS}"
-          def customImage = docker.build("ramiyappan/studentsurvey:${BUILD_TIMESTAMP}")
+          tag = generateTag()
+          docker.withRegistry('',registryCredential){
+          def customImage = docker.build("ramiyappan/studentsurvey:"+tag)
+          }
         }
       }
     }
     stage("Pushing Image to DockerHub") {
       steps {
         script {
-          sh 'docker push ramiyappan/studentsurvey:${BUILD_TIMESTAMP}'
+           docker.withRegistry('',registryCredential) {
+             def image = docker.build('ramiyappan/studentsurvey:'+tag, '.')
+             docker.withRegistry('',registryCredential) {
+               image.push()
+             }
+           }
         }
       }
     }
     stage("Deploying to Rancher as single pod") {
       steps {
-        sh 'kubectl set image deployment/stusurvey-pipeline stusurvey-lb-ramiyappan/studentsurvey:${BUILD_TIMESTAMP)-n jenkins-pipeline'
+        script {
+          sh 'kubectl set image deployment/finaldeploy container-0=ramiyappan/studentsurvey:'+tag
       }
     }
     stage("Deploying to Rancher as with load balancer") {
       steps {
-        sh 'kubectl set image deployment/studentsurvey-lb studentsurvey-lb-ramiyappan/studentsurvey:${BUILD_TIMESTAMP)-n jenkins-pipeline'
+        sh 'kubectl set image deployment/loadbal container-0=ramiyappan/studentsurvey:'+tag'
       }
     }
   }
