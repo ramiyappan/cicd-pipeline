@@ -15,10 +15,8 @@ pipeline {
                     // sh 'rm -rf *.war'
                     sh 'jar -cvf NewSurvey.war -C webapp/ .'
                     // sh 'echo ${BUILD TIMESTAMP}'
-                    tag = generateTag()
-                    docker.withRegistry('',registryCredential){
-                    def customImage = docker.build("ramiyappan/studentsurvey:"+tag)
-                   }
+                    sh 'docker build -t ramiyappan/studentsurvey:$BUILD_NUMBER .'
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                }
             }
         }
