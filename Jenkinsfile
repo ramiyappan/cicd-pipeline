@@ -1,52 +1,60 @@
+@NonCPS
+def generateTag() {
+    return "build-" + new Date().format("yyyyMMdd-HHmmss")
+}
+
 pipeline {
-   environment {
+    environment {
         registry = "ramiyappan/studentsurvey"
         registryCredential = 'dockid'
-        TIMESTAMP = new Date().format("yyyyMMdd_HHmmss")
     }
-   agent any
+    agent any
 
-   stages {
-      stage('Build') {
-         steps {
-            script{
-               sh 'rm -rf *.war'
-               sh 'jar -cvf studentSurveyForm.war -C Webcontent .'
-               //sh 'echo ${BUILD_TIMESTAMP}'
-
-               docker.withRegistry('https://index.docker.io/v1/', registryCredential){
-                  def customImage = docker.build("ramiyappan/studentsurvey:${env.TIMESTAMP}")
+    stages{
+        
+        stage('Build') {
+            steps {
+                script {
+                    checkout scm
+                    sh 'rm -rf *.war'
+                    sh 'jar -cvf StudentSurvey.war -C WebContent/ .'
+                    // sh 'echo ${BUILD TIMESTAMP}'
+                    tag = generateTag()
+                    docker.withRegistry('',registryCredential){
+                    def customImage = docker.build("ramiyappan/studentsurvey:"+tag)
+                   }
                }
             }
-         }
-      }
-
-      stage('Push Image to Dockerhub') {
-         steps {
-            script{
-               docker.withRegistry('https://index.docker.io/v1/', registryCredential){
-                  sh "docker push ramiyappan/studentsurvey:${env.TIMESTAMP}"
-               }
+        }
+        
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    // sh 'echo ${BUILD_TIMESTAMP}'
+                    docker.withRegistry('',registryCredential) {
+                        def image = docker.build('ramiyappan/studentsurvey:'+tag, '.')
+                        docker.withRegistry('',registryCredential) {
+                            image.push()
+                        }
+                    }
+                }
             }
-         }
-      }
-
-      stage('Deploying Rancher to single pod') {
-         steps {
-            script{
-               sh "kubectl set image deployment/student-survey container-0=ramiyappan/studentsurvey:${env.TIMESTAMP}"
+        }
+       
+        stage('Deploying Rancher to single node') {
+            steps {
+                script{
+                sh 'kubectl set image deployment/hw2-cluster-deployment container-0=dipakmeher51/studentsurvey645:'+tag
+                }
             }
-         }
-      }
-      
-      stage('Deploying to Rancher using Load Balancer as a service') {
-         steps {
-            script{
-               sh "kubectl set image deployment/student-survey-lb container-0=ramiyappan/studentsurvey:${env.TIMESTAMP}"
+        }
+        
+        stage('Deploying Rancher to Load Balancer') {
+            steps {
+                script{
+                    sh 'kubectl set image deployment/hw2-cluster-deploymentlb container-0=dipakmeher51/studentsurvey645:'+tag
+                }
             }
-         }
-      }
-
-      
-   }
+        }
+    }
 }
