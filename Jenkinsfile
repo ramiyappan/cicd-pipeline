@@ -3,6 +3,7 @@ pipeline {
   environment {
     DOCKERHUB_PASS = credentials('dockid')
   }
+  
   stages {
     stage("Building the Student Survey Image") {
       steps {
@@ -15,25 +16,26 @@ pipeline {
           docker login -u ${DOCKERHUB_USER} -p '${DOCKERHUB_PASS}'
           """
           }
-          def customImage = docker.build("ramiyappan/studentsurvey:${BUILD_TIMESTAMP}")
+          def customImage = docker.build("ramiyappan/studentsurvey")
         }
       }
     }
     stage("Pushing Image to DockerHub") {
       steps {
         script {
-          sh 'docker push ramiyappan/studentsurvey:${BUILD_TIMESTAMP}'
+          sh 'docker push ramiyappan/studentsurvey'
         }
       }
     }
     stage("Deploying to Rancher as single pod") {
       steps {
-        sh 'kubectl set image deployment/stusurvey-pipeline stusurvey-lb-ramiyappan/studentsurvey:${BUILD_TIMESTAMP)-n jenkins-pipeline'
+        sh 'kubectl set image deployment/finaldeploy container-0=ramiyappan/studentsurvey -n jenkins-pipeline'
       }
     }
     stage("Deploying to Rancher as with load balancer") {
       steps {
-        sh 'kubectl set image deployment/studentsurvey-lb studentsurvey-lb-ramiyappan/studentsurvey:${BUILD_TIMESTAMP)-n jenkins-pipeline'
+        sh 'kubectl set image deployment/loadbal container-0=ramiyappan/studentsurvey -n jenkins-pipeline'
       }
     }
   }
+}
