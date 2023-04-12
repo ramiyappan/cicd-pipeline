@@ -20,9 +20,9 @@ pipeline {
                     sh 'rm -rf *.war'
                     sh 'jar -cvf Survey.war -C src/main/webapp/ .'
                     tag = generateTag()
-                    sh "echo ${BUILD_TIMESTAMP}"
+                    sh "echo "$BUILD_TIMESTAMP""
                     // sh 'pwd'
-                    sh "docker build -t ramiyappan/studentsurvey:${BUILD_TIMESTAMP} ."
+                    sh "docker build -t ramiyappan/studentsurvey:"$BUILD_TIMESTAMP" ."
                     // sh 'pwd'
                     sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                }
