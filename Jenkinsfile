@@ -2,6 +2,8 @@ pipeline {
     agent any
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockid')
+        TIMESTAMP = new Date().format("yyyyMMdd_HHmmss")
+    }
     }
 
     stages{
@@ -16,7 +18,7 @@ pipeline {
                     sh 'jar -cvf Survey.war -C src/main/webapp/ .'
                     // sh "echo $BUILD_TIMESTAMP"
                     // sh 'pwd'
-                    sh "docker build -t ramiyappan/newsurvey:latest ."
+                    sh "docker build -t ramiyappan/newsurvey:${env.TIMESTAMP} ."
                     // sh 'pwd'
                     sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                }
@@ -27,7 +29,7 @@ pipeline {
             steps {
                 script {
                     // sh 'echo ${BUILD_TIMESTAMP}'
-                    sh "docker push ramiyappan/newsurvey:latest"
+                    sh "docker push ramiyappan/newsurvey:${env.TIMESTAMP}"
                 }
             }
         }
@@ -35,7 +37,7 @@ pipeline {
         stage('Deploying Rancher to single node') {
             steps {
                 script{
-                sh "kubectl set image deployment/newdeployment container-0=ramiyappan/newsurvey:latest"
+                sh "kubectl set image deployment/newdeployment container-0=ramiyappan/newsurvey:${env.TIMESTAMP}"
                 }
             }
         }
