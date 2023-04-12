@@ -21,9 +21,7 @@ pipeline {
       stage('Push Image to Dockerhub') {
          steps {
             script{
-               docker.withRegistry('https://index.docker.io/v1/', registryCredential){
                   sh "docker push ramiyappan/studentsurvey:${env.TIMESTAMP}"
-               }
             }
          }
       }
