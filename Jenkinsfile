@@ -10,8 +10,8 @@ pipeline {
             steps {
                 script {
                     checkout scm
-                    //sh 'pwd'
-                    //sh 'ls'
+                    sh 'pwd'
+                    sh 'ls'
                     sh 'rm -rf *.war'
                     sh 'jar -cvf NewSurvey.war -C src/main/webapp/ .'
                     // sh 'echo ${BUILD TIMESTAMP}'
