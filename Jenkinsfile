@@ -13,7 +13,7 @@ pipeline {
                     sh 'pwd'
                     sh 'ls'
                     sh 'rm -rf *.war'
-                    sh 'jar -cvf NewSurvey.war -C src/main/webapp/ .'
+                    sh 'jar -cvf Survey.war -C src/main/webapp/ .'
                     // sh 'echo ${BUILD TIMESTAMP}'
                     // sh 'pwd'
                     sh 'docker build -t ramiyappan/studentsurvey .'
