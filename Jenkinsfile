@@ -1,6 +1,6 @@
 pipeline {
    environment {
-        registry = "ramiyappan/newsurvey"
+        registry = "ramiyappan/studentsurvey"
         registryCredential = 'dockid'
         TIMESTAMP = new Date().format("yyyyMMdd_HHmmss")
     }
@@ -15,7 +15,7 @@ pipeline {
                //sh 'echo ${BUILD_TIMESTAMP}'
 
                docker.withRegistry('https://index.docker.io/v1/', registryCredential){
-                  def customImage = docker.build("ramiyappan/newsurvey:${env.TIMESTAMP}")
+                  def customImage = docker.build("ramiyappan/studentsurvey:${env.TIMESTAMP}")
                }
             }
          }
@@ -25,7 +25,7 @@ pipeline {
          steps {
             script{
                docker.withRegistry('https://index.docker.io/v1/', registryCredential){
-                  sh "docker push ramiyappan/newsurvey:${env.TIMESTAMP}"
+                  sh "docker push ramiyappan/studentsurvey:${env.TIMESTAMP}"
                }
             }
          }
@@ -34,7 +34,7 @@ pipeline {
       stage('Deploying Rancher to single pod') {
          steps {
             script{
-               sh "kubectl set image deployment/newdeployment container-0=ramiyappan/newsurvey:${env.TIMESTAMP}"
+               sh "kubectl set image deployment/newdeployment container-0=ramiyappan/studentsurvey:${env.TIMESTAMP}"
             }
          }
       }
