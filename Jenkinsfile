@@ -34,7 +34,13 @@ pipeline {
          }
       }
       
-
+      stage('Deploying to Rancher using Load Balancer as a service') {
+         steps {
+            script{
+               sh "kubectl set image deployment/loadbal container-0=averma24/studentsurveyassignment:${env.TIMESTAMP}"
+            }
+         }
+      }
       
    }
 }
