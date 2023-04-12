@@ -35,7 +35,7 @@ pipeline {
         stage('Deploying Rancher to single node') {
             steps {
                 script{
-                sh "kubectl set image deployment/newdeployment container-0=ramiyappan/studentsurvey:latest -n newpipe"
+                sh "kubectl set image deployment/newdeployment container-0=ramiyappan/studentsurvey:latest"
                 }
             }
         }
@@ -43,7 +43,7 @@ pipeline {
         stage('Deploying Rancher to Load Balancer') {
             steps {
                 script{
-                    sh "kubectl set image deployment/loadbal loadbal=ramiyappan/studentsurvey:latest -n newpipe"
+                    sh "kubectl set image deployment/loadbal loadbal=ramiyappan/studentsurvey:latest"
                 }
             }
         }
