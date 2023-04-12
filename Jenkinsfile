@@ -1,7 +1,6 @@
 pipeline {
    environment {
-        registry = "ramiyappan/studentsurvey"
-        registryCredential = 'dockid'
+        DOCKERHUB_CREDENTIALS = credentials('dockid')
         TIMESTAMP = new Date().format("yyyyMMdd_HHmmss")
     }
    agent any
