@@ -14,10 +14,9 @@ pipeline {
                     // sh 'ls'
                     sh 'rm -rf *.war'
                     sh 'jar -cvf Survey.war -C src/main/webapp/ .'
-                    tag = generateTag()
-                    sh "echo $BUILD_TIMESTAMP"
+                    // sh "echo $BUILD_TIMESTAMP"
                     // sh 'pwd'
-                    sh "docker build -t ramiyappan/studentsurvey:$BUILD_TIMESTAMP ."
+                    sh "docker build -t ramiyappan/studentsurvey:latest ."
                     // sh 'pwd'
                     sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                }
@@ -28,7 +27,7 @@ pipeline {
             steps {
                 script {
                     // sh 'echo ${BUILD_TIMESTAMP}'
-                    sh "docker push ramiyappan/studentsurvey:${BUILD TIMESTAMP}"
+                    sh "docker push ramiyappan/studentsurvey:latest"
                 }
             }
         }
@@ -36,7 +35,7 @@ pipeline {
         stage('Deploying Rancher to single node') {
             steps {
                 script{
-                sh "kubectl set image deployment/newdeployment container-0=ramiyappan/studentsurvey:${BUILD TIMESTAMP}"
+                sh "kubectl set image deployment/newdeployment container-0=ramiyappan/studentsurvey:latest"
                 }
             }
         }
@@ -44,7 +43,7 @@ pipeline {
         stage('Deploying Rancher to Load Balancer') {
             steps {
                 script{
-                    sh "kubectl set image deployment/newdeployment-loadbalancer container-0=ramiyappan/studentsurvey:${BUILD TIMESTAMP}"
+                    sh "kubectl set image deployment/newdeployment-loadbalancer container-0=ramiyappan/studentsurvey:latest"
                 }
             }
         }
