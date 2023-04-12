@@ -1,14 +1,8 @@
-@NonCPS
-def generateTag() {
-    return "build-" + new Date().format("yyyyMMdd-HHmmss")
-}
-
 pipeline {
-    environment {
-        registry = "ramiyappan/studentsurvey"
-        registryCredential = 'dockid'
-    }
     agent any
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockid')
+    }
 
     stages{
         
@@ -16,13 +10,15 @@ pipeline {
             steps {
                 script {
                     checkout scm
+                    // sh 'pwd'
+                    // sh 'ls'
                     sh 'rm -rf *.war'
                     sh 'jar -cvf Survey.war -C src/main/webapp/ .'
-                    // sh 'echo ${BUILD TIMESTAMP}'
-                    tag = generateTag()
-                    docker.withRegistry('',registryCredential){
-                    def customImage = docker.build("ramiyappan/studentsurvey:"+tag)
-                   }
+                    // sh "echo $BUILD_TIMESTAMP"
+                    // sh 'pwd'
+                    sh "docker build -t ramiyappan/studentsurvey:latest ."
+                    // sh 'pwd'
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                }
             }
         }
@@ -31,12 +27,7 @@ pipeline {
             steps {
                 script {
                     // sh 'echo ${BUILD_TIMESTAMP}'
-                    docker.withRegistry('',registryCredential) {
-                        def image = docker.build('ramiyappan/studentsurvey:'+tag, '.')
-                        docker.withRegistry('',registryCredential) {
-                            image.push()
-                        }
-                    }
+                    sh "docker push ramiyappan/studentsurvey:latest"
                 }
             }
         }
@@ -44,7 +35,7 @@ pipeline {
         stage('Deploying Rancher to single node') {
             steps {
                 script{
-                sh 'kubectl set image deployment/newdeployment container-0=ramiyappan/studentsurvey:'+tag
+                sh "kubectl set image deployment/newdeployment container-0=ramiyappan/studentsurvey:latest -n jenkins-pipeline"
                 }
             }
         }
@@ -52,7 +43,7 @@ pipeline {
         stage('Deploying Rancher to Load Balancer') {
             steps {
                 script{
-                    sh 'kubectl set image deployment/newdeploymentlb container-0=ramiyappan/studentsurvey:'+tag
+                    sh "kubectl set image deployment/loadbal loadbal=ramiyappan/studentsurvey:latest -n jenkins-pipeline"
                 }
             }
         }
