@@ -40,12 +40,12 @@ pipeline {
             }
         }
         
-        stage('Deploying Rancher to Load Balancer') {
-            steps {
-                script{
-                    sh "kubectl set image deployment/loadbal loadbal=ramiyappan/studentsurvey:latest"
-                }
-            }
-        }
+        //stage('Deploying Rancher to Load Balancer') {
+        //    steps {
+        //        script{
+        //            sh "kubectl set image deployment/loadbal loadbal=ramiyappan/studentsurvey:latest"
+        //        }
+        //    }
+        //}
     }
 }
