@@ -13,10 +13,8 @@ pipeline {
                sh 'rm -rf *.war'
                sh 'jar -cvf Survey.war -C src/main/webapp/ .'
                //sh 'echo ${BUILD_TIMESTAMP}'
-
-               docker.withRegistry('https://index.docker.io/v1/', registryCredential){
-                  def customImage = docker.build("ramiyappan/studentsurvey:${env.TIMESTAMP}")
-               }
+               sh "docker build -t ramiyappan/studentsurvey:${env.TIMESTAMP} ."
+               sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
             }
          }
       }
