@@ -33,14 +33,6 @@ pipeline {
             }
          }
       }
-      
-      stage('Deploying to Rancher using Load Balancer as a service') {
-         steps {
-            script{
-               sh "kubectl set image deployment/newdeployment-loadbalancer newdeployment-loadbalancer=ramiyappan/studentsurvey:${env.TIMESTAMP}"
-            }
-         }
-      }
-      
+            
    }
 }
