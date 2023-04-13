@@ -6,7 +6,7 @@ pipeline {
    agent any
 
    stages {
-      stage('Build') {
+      stage('Build Image') {
          steps {
             script{
                sh 'rm -rf *.war'
@@ -18,7 +18,7 @@ pipeline {
          }
       }
 
-      stage('Push Image to Dockerhub') {
+      stage('Push Image') {
          steps {
             script{
                   sh "docker push ramiyappan/studentsurvey:${env.TIMESTAMP}"
@@ -26,7 +26,7 @@ pipeline {
          }
       }
 
-      stage('Deploying Rancher to single pod') {
+      stage('Update Deployment') {
          steps {
             script{
                sh "kubectl set image deployment/newdeployment container-0=ramiyappan/studentsurvey:${env.TIMESTAMP}"
@@ -34,7 +34,7 @@ pipeline {
          }
       }
       
-      stage('Deploying to Rancher using Load Balancer as a service') {
+      stage('Update LoadBalancer') {
          steps {
             script{
                sh 'kubectl rollout restart deploy newdeployment -n default'
@@ -44,11 +44,8 @@ pipeline {
    }
       
       post {
-	      always {
-			   sh 'docker logout'
-		   }
-	   }    
-
-            
-
+	  always {
+		sh 'docker logout'
+	  }
+      }    
 }
