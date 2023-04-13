@@ -37,7 +37,7 @@ pipeline {
       stage('Deploying to Rancher using Load Balancer as a service') {
          steps {
             script{
-               sh 'kubectl rollout restart deploy studentsurvey -n default'
+               sh 'kubectl rollout restart deploy newdeployment -n default'
             }
          }
       }
