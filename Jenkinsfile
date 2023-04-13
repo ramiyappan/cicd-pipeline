@@ -37,7 +37,7 @@ pipeline {
       stage('Deploying to Rancher using Load Balancer as a service') {
          steps {
             script{
-               sh "kubectl set image deployment/newdeployment-loadbal container-0=ramiyappan/studentsurvey:${env.TIMESTAMP}"
+               sh "kubectl set image deployment/newdeployment-loadbalancer container-0=ramiyappan/studentsurvey:${env.TIMESTAMP}"
             }
          }
       }
